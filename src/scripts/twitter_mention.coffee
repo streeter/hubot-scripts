@@ -11,6 +11,7 @@
 # Configuration:
 #   HUBOT_TWITTER_MENTION_QUERY
 #   HUBOT_TWITTER_MENTION_ROOM
+#   HUBOT_TWITTER_MENTION_TRANSLATE
 #
 # Author:
 #   Sachinr
@@ -18,6 +19,7 @@
 module.exports = (robot) ->
   response = new robot.Response(robot)
   room = process.env.HUBOT_TWITTER_MENTION_ROOM
+  translate = process.env.HUBOT_TWITTER_MENTION_TRANSLATE
   robot.brain.data.twitter_mention ?= {}
 
   setInterval ->
@@ -33,6 +35,12 @@ module.exports = (robot) ->
             for tweet in tweets.results.reverse()
               message = "http://twitter.com/#!/#{tweet.from_user}/status/#{tweet.id_str}"
               robot.messageRoom room, message
+
+              if tweet.iso_language_code != 'en' and translate?
+                # Translate the tweet
+                message = "hubot translate from #{tweet.iso_language_code} \"#{tweet.text}\""
+                robot.messageRoom room, message
+
   , 1000 * 60 * 5
 
   robot.respond /(set twitter query) (.*)/i, (msg) ->
